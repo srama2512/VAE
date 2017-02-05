@@ -27,6 +27,8 @@ train_step = tf.train.AdamOptimizer(1e-4).minimize(VAE.total_loss)
 
 sess.run(tf.initialize_all_variables())
 
+saver = tf.train.Saver()
+
 for i in range(200000):
     
     batch = mnist.train.next_batch(params['batch_size'])
@@ -43,3 +45,6 @@ for i in range(200000):
             reshaped_image = generated[im]
             reshaped_image = reshaped_image.reshape(28, 28)
             scipy.misc.toimage(reshaped_image, cmin=0.0, cmax=1.0).save('generated_class/iter_%.6d/img%.3d.jpg'%(i+1,im))
+
+        save_path = saver.save(sess, 'generated_class/iter_%.6d/checkpoint.ckpt'%(i+1))
+        print('Saved model to %s'%(save_path))
