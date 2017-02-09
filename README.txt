@@ -37,3 +37,14 @@ References:
 (2) Another useful reference for implementing VAEs is:
 	https://jmetzen.github.io/2015-11-27/vae.html
 
+----------------------------------------------------------------------------
+Changelog:
+----------------------------------------------------------------------------
+
+======================================
+* Added support for a Beta weighting term in the KL Divergence loss
+* Batch size is no longer fixed at initialization
+* Added functions to encode a given x and decode a given z, and also to
+  perform both these operations to generate an image "like" the given one.
+* beta_trainScriptClass_conditional.py adds visualization of latent
+  features.

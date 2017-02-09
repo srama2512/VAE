@@ -29,13 +29,13 @@ class vae(object):
 		self.hidden_gen_2_size = params['hidden_gen_2_size']
 		self.X_size = params['X_size']
 		self.z_size = params['z_size']
-		self.batch_size = params['batch_size']
+		#self.batch_size = params['batch_size']
 		self.beta = params['beta']
 
 	def _create_network_(self):
 
-		self.X_placeholder = tf.placeholder(tf.float32, [self.batch_size, \
-														 self.X_size])
+		self.X_placeholder = tf.placeholder(tf.float32,[None, self.X_size])
+		self.batch_size = tf.shape(self.X_placeholder)[0]
 		self.getEncoder()
 		self.getLatentSampler()
 		self.getGenerator()
@@ -58,6 +58,10 @@ class vae(object):
 	def encode(self,sess,x) :
 		return  sess.run(self.z_sample, \
 						feed_dict={self.X_placeholder: x})
+	
+	def decode(self,sess,z) :
+			return sess.run(self.output, \
+						feed_dict={self.z_sample: z})
 
 	def getEncoder(self):
 		
