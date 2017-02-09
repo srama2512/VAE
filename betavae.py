@@ -30,6 +30,7 @@ class vae(object):
 		self.X_size = params['X_size']
 		self.z_size = params['z_size']
 		self.batch_size = params['batch_size']
+		self.beta = params['beta']
 
 	def _create_network_(self):
 
@@ -49,6 +50,14 @@ class vae(object):
 		z_rng = np.random.normal(size=[self.batch_size, self.z_size])
 		return sess.run(self.output, \
 						feed_dict={self.z_sample: z_rng})
+	
+	def generateSample_conditional(self, sess, x) :
+		return sess.run(self.output, \
+						feed_dict={self.X_placeholder: x})
+	
+	def encode(self,sess,x) :
+		return  sess.run(self.z_sample, \
+						feed_dict={self.X_placeholder: x})
 
 	def getEncoder(self):
 		
@@ -74,8 +83,8 @@ class vae(object):
 
 	def getLatentSampler(self):
 
-		eps = tf.random_normal([self.batch_size, self.z_size], 0, 1, dtype=tf.float32)
-		self.z_sample = tf.multiply(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), eps) + self.mu_X
+		self.eps = tf.random_normal([self.batch_size, self.z_size], 0, 1, dtype=tf.float32)
+		self.z_sample = tf.multiply(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
 
 	def getGenerator(self):
 
@@ -104,6 +113,6 @@ class vae(object):
 		# obtain the latent encoding error using KL Divergence
 		# between the distribution over z = N(mu(X, Sigma(X)) and 
 		# N(0, I) for each element in batch
-		self.kl_loss = tf.reduce_sum(tf.exp(self.log_Sigma_X_diag) + \
+		self.kl_loss = self.beta*tf.reduce_sum(tf.exp(self.log_Sigma_X_diag) + \
 									 tf.square(self.mu_X) - 1 - self.log_Sigma_X_diag, 1)
 

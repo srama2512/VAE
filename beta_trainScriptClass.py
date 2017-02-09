@@ -1,5 +1,5 @@
 import tensorflow as tf
-import vae
+import betavae as vae
 import pdb
 import numpy as np
 import os
@@ -10,7 +10,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("./data/", one_hot=True)
 sess = tf.InteractiveSession()
 
-tr_iters = 200000
+tr_iters = 50000
 
 params = {}
 params['batch_size'] = 20
@@ -18,8 +18,9 @@ params['X_size'] = 784
 params['hidden_enc_1_size'] = 500
 params['hidden_enc_2_size'] = 200
 params['z_size'] = 20
-params['hidden_gen_1_size'] = 200
-params['hidden_gen_2_size'] = 500
+params['hidden_gen_1_size'] = 500
+params['hidden_gen_2_size'] = 200
+params['beta'] = 4
 
 params_generated = params
 
