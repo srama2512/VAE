@@ -3,3 +3,6 @@ generated_class/
 generated_class_conditional
 betavae.pyc
 vae.pyc
+MNIST_data/
+generated_functional/
+
