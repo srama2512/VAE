@@ -43,8 +43,10 @@ VAE._create_network_()
 
 train_step = tf.train.AdamOptimizer(1e-4).minimize(VAE.total_loss)
 
-# sess.run(tf.initialize_all_variables()) # to be deprecated soon, replaced by lower line
-sess.run(tf.global_variables_initializer())
+try:
+    sess.run(tf.global_variables_initializer())
+except:
+    sess.run(tf.initialize_all_variables())
 
 saver = tf.train.Saver()
 
