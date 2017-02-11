@@ -1,12 +1,6 @@
 import tensorflow as tf
 import numpy as np
 
-def getWeight(shape):
-    # Xavier initialization of weights
-    low = -np.sqrt(6.0/(shape[0]+shape[1]))
-    high = np.sqrt(6.0/(shape[0]+shape[1]))
-    return tf.Variable(tf.random_uniform(shape, minval=low, maxval=high, dtype=tf.float32))
-
 def getBias(shape):
     # Initialize biases as 0
     return tf.Variable(tf.constant(0, shape=shape, dtype=tf.float32), dtype=tf.float32)
@@ -45,7 +39,7 @@ class vae(object):
         # average the total loss over all samples
         self.total_loss = tf.reduce_mean(self.rec_loss + self.kl_loss)
 
-    def generateSample(self, sess, n_samples = 1):
+    def generateSample(self, sess, n_samples = 20):
         '''
         Choose random z and return decoded image(s)
         '''
@@ -91,22 +85,22 @@ class vae(object):
     def getEncoder(self):
             
         # Hidden layer 1
-        self.enc_h_1_w = getWeight([self.X_size, self.hidden_enc_1_size])
+        self.enc_h_1_w = tf.get_variable("enc_h1_w",shape=[self.X_size, self.hidden_enc_1_size], initializer=tf.contrib.layers.xavier_initializer())
         self.enc_h_1_b = getBias([self.hidden_enc_1_size])
         hidden_1 = tf.nn.relu(tf.matmul(self.X_placeholder, self.enc_h_1_w) \
                            + self.enc_h_1_b)
 
         # Hidden layer 2
-        self.enc_h_2_w = getWeight([self.hidden_enc_1_size, self.hidden_enc_2_size])
+        self.enc_h_2_w = tf.get_variable("enc_h2_w",shape=[self.hidden_enc_1_size, self.hidden_enc_2_size], initializer=tf.contrib.layers.xavier_initializer())
         self.enc_h_2_b = getBias([self.hidden_enc_2_size])
         hidden_2 = tf.nn.relu(tf.matmul(hidden_1, self.enc_h_2_w) + self.enc_h_2_b)
 
         # Get mu(X) and log_Sigma_diag(X)
-        self.mu_weight = getWeight([self.hidden_enc_2_size, self.z_size])
+        self.mu_weight = tf.get_variable("enc_mu_w", shape=[self.hidden_enc_2_size, self.z_size], initializer=tf.contrib.layers.xavier_initializer())
         self.mu_bias = getBias([self.z_size])
         self.mu_X = tf.matmul(hidden_2, self.mu_weight) +  self.mu_bias
 
-        self.Sigma_weight = getWeight([self.hidden_enc_2_size, self.z_size])
+        self.Sigma_weight = tf.get_variable("sigma_w", shape=[self.hidden_enc_2_size, self.z_size], initializer=tf.contrib.layers.xavier_initializer())
         self.Sigma_bias = getBias([self.z_size])
         self.log_Sigma_X_diag = tf.matmul(hidden_2, self.Sigma_weight) + self.Sigma_bias
 
@@ -117,17 +111,17 @@ class vae(object):
 
     def getGenerator(self):
         # Hidden layer 1
-        self.gen_h_1_w = getWeight([self.z_size, self.hidden_gen_1_size])
+        self.gen_h_1_w = tf.get_variable("gen_h1_w", shape=[self.z_size, self.hidden_gen_1_size], initializer=tf.contrib.layers.xavier_initializer())
         self.gen_h_1_b = getBias([self.hidden_gen_1_size])
         hidden_1 = tf.nn.relu(tf.matmul(self.z_sample, self.gen_h_1_w) + self.gen_h_1_b)
 
         # Hidden layer 2
-        self.gen_h_2_w = getWeight([self.hidden_gen_1_size, self.hidden_gen_2_size])
+        self.gen_h_2_w = tf.get_variable("gen_h2_w", shape=[self.hidden_gen_1_size, self.hidden_gen_2_size], initializer=tf.contrib.layers.xavier_initializer())
         self.gen_h_2_b = getBias([self.hidden_gen_2_size])
         hidden_2 = tf.nn.relu(tf.matmul(hidden_1, self.gen_h_2_w) + self.gen_h_2_b)
 
         # Generated output
-        self.output_weight = getWeight([self.hidden_gen_2_size, self.X_size])
+        self.output_weight = tf.get_variable("gen_op_w", shape=[self.hidden_gen_2_size, self.X_size], initializer=tf.contrib.layers.xavier_initializer())
         self.output_bias = getBias([self.X_size])
         self.output = tf.nn.sigmoid(tf.matmul(hidden_2, self.output_weight) + self.output_bias)
 

@@ -9,7 +9,7 @@ def getBias(shape):
     return tf.Variable(tf.constant(0, shape=shape, dtype=tf.float32), dtype=tf.float32)
 
 class vae(object):
-	
+    
     def __init__(self, params):
         # params consists of:
         # (1) X_size: number of image pixels
@@ -19,22 +19,22 @@ class vae(object):
         self.beta = params['beta']
         
     def _create_network_(self):
-	
-		self.X_placeholder = tf.placeholder(tf.float32,[None, 28, 28, 1])
-		
-		self.fc_size = 32*6*6 # Size to flatten to after 2nd convolution 
-		self.batch_size = 20#tf.shape(self.X_placeholder)[0]
-		self.num_channels = 1#tf.shape(self.X_placeholder)[3]
-		self.getEncoder()
-		self.getLatentSampler()
-		self.getGenerator()
-		self.getReconstructionLoss()
-		self.getKLDLoss()
-		# average the total loss over all samples
-		self.total_loss = tf.reduce_mean(self.rec_loss + self.kl_loss)
+    
+        self.X_placeholder = tf.placeholder(tf.float32,[None, 28, 28, 1])
 
-    def generateSample(self, sess):
-        z_rng = np.random.normal(size=[20, self.z_size])
+        self.fc_size = 32*6*6 # Size to flatten to after 2nd convolution 
+        self.batch_size = 20#tf.shape(self.X_placeholder)[0]
+        self.num_channels = 1#tf.shape(self.X_placeholder)[3]
+        self.getEncoder()
+        self.getLatentSampler()
+        self.getGenerator()
+        self.getReconstructionLoss()
+        self.getKLDLoss()
+        # average the total loss over all samples
+        self.total_loss = tf.reduce_mean(self.rec_loss + self.kl_loss)
+
+    def generateSample(self, sess, n_samples=20):
+        z_rng = np.random.normal(size=[n_samples, self.z_size])
         return sess.run(self.output, feed_dict={self.z_sample: z_rng})
     
     def generateSampleConditional(self, sess, x) :

@@ -43,7 +43,8 @@ VAE._create_network_()
 
 train_step = tf.train.AdamOptimizer(1e-4).minimize(VAE.total_loss)
 
-sess.run(tf.initialize_all_variables())
+# sess.run(tf.initialize_all_variables()) # to be deprecated soon, replaced by lower line
+sess.run(tf.global_variables_initializer())
 
 saver = tf.train.Saver()
 
@@ -62,7 +63,7 @@ for i in range(tr_iters):
         print('Iteration %.4d  Train Loss: %6.3f'%(i+1, loss_val))
 
     if (i+1) % 50000 == 0 or i == 0:
-        generated = VAE.generateSample(sess)
+        generated = VAE.generateSample(sess, n_samples=params['batch_size'])
         os.system('mkdir -p generated_conv/iter_%.6d'%(i+1))
         for im in range(params['batch_size']):
             reshaped_image = generated[im]
