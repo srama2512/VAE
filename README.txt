@@ -48,3 +48,6 @@ Changelog:
   perform both these operations to generate an image "like" the given one.
 * beta_trainScriptClass_conditional.py adds visualization of latent
   features.
+======================================
+* Added convolution + deconvolution based VAE
+* Batch size is again fixed at initialization, have to alter the technique.

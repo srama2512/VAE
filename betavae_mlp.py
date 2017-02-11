@@ -47,7 +47,7 @@ class vae(object):
 
     def generateSample(self, sess):
 
-        z_rng = np.random.normal(size=[self.batch_size, self.z_size])
+        z_rng = np.random.normal(size=[20, self.z_size])
         return sess.run(self.output, feed_dict={self.z_sample: z_rng})
     
     def generateSampleConditional(self, sess, x) :
@@ -84,10 +84,9 @@ class vae(object):
     def getLatentSampler(self):
 
         self.eps = tf.random_normal([self.batch_size, self.z_size], 0, 1, dtype=tf.float32)
-        self.z_sample = tf.multiply(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
+        self.z_sample = tf.mul(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
 
     def getGenerator(self):
-
         # Hidden layer 1
         self.gen_h_1_w = getWeight([self.z_size, self.hidden_gen_1_size])
         self.gen_h_1_b = getBias([self.hidden_gen_1_size])
