@@ -45,18 +45,47 @@ class vae(object):
         # average the total loss over all samples
         self.total_loss = tf.reduce_mean(self.rec_loss + self.kl_loss)
 
-    def generateSample(self, sess):
-
-        z_rng = np.random.normal(size=[20, self.z_size])
+    def generateSample(self, sess, n_samples = 1):
+        '''
+        Choose random z and return decoded image(s)
+        '''
+        z_rng = np.random.normal(size=[n_samples, self.z_size])
         return sess.run(self.output, feed_dict={self.z_sample: z_rng})
     
+    
     def generateSampleConditional(self, sess, x) :
+        '''
+        Sample z from Q(z|x) and return decoded image
+        '''
         return sess.run(self.output, feed_dict={self.X_placeholder: x})
     
+    
+    def generateSampleConditional_ML(self, sess, x) :
+        '''
+        Use the most likely z for given x to generate a sample instead of
+        sampling from Q(z|x)
+		'''
+        return self.decode(sess,self.encode_ML(sess,x))
+    
+    
     def encode(self,sess,x) :
+        '''
+        Encode a given value of x to z by sampling z from Q(z|x)
+        '''
         return sess.run(self.z_sample, feed_dict={self.X_placeholder: x})
     
+    
+    def encode_ML(self,sess,x) :
+        '''
+        Encode a given value of x to z by using the most likely z from Q(z|x)
+        '''
+        return sess.run(self.mu_X, feed_dict={self.X_placeholder: x})
+    
+    
     def decode(self,sess,z) :
+        '''
+        Generate x for a given z
+        '''
         return sess.run(self.output, feed_dict={self.z_sample: z})
 
     def getEncoder(self):
@@ -103,15 +132,19 @@ class vae(object):
         self.output = tf.nn.sigmoid(tf.matmul(hidden_2, self.output_weight) + self.output_bias)
 
     def getReconstructionLoss(self):
-        # obtain the negative log likelihood for bernoulli distribution
-        # for each sample in the batch
+        '''
+        Obtain the negative log likelihood for bernoulli distribution
+        for each sample in the batch
+        '''
         self.rec_loss = -tf.reduce_sum(self.X_placeholder*tf.log(1e-10 + self.output)  \
                                                 + (1-self.X_placeholder)*tf.log(1e-10 + 1 - self.output), 1)
 
     def getKLDLoss(self):
-        # obtain the latent encoding error using KL Divergence
-        # between the distribution over z = N(mu(X, Sigma(X)) and 
-        # N(0, I) for each element in batch
+        '''
+        Obtain the latent encoding error using KL Divergence
+        between the distribution over z = N(mu(X, Sigma(X)) and 
+        N(0, I) for each element in batch
+        '''
         self.kl_loss = self.beta*tf.reduce_sum(tf.exp(self.log_Sigma_X_diag) + \
                                                                  tf.square(self.mu_X) - 1 - self.log_Sigma_X_diag, 1)
 
