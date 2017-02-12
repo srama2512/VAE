@@ -6,3 +6,4 @@ vae.pyc
 MNIST_data/
 generated_functional/
 generated_conv/
+test_images/
