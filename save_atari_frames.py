@@ -1,9 +1,15 @@
 import gym
 import pickle
+import Image
+import numpy as np
+
+# Extract Y channel from RGB, resize to 84x84 and return
+def toNatureDQNFormat(frame) :
+	return np.array(Image.fromarray(frame).convert('YCbCr').resize((84,84),Image.BILINEAR))[:,:,0]
 
 env = gym.make('Breakout-v0')
 
-num_episodes = 2
+num_episodes = 1
 num_steps = 50
 
 frames = []
@@ -14,11 +20,12 @@ for episode in range(num_episodes):
         env.render()
         action = env.action_space.sample()
         next_obs, reward, done, info = env.step(action)
-        frames.append(next_obs)
+        frames.append(toNatureDQNFormat(next_obs))
         if done:
             break
 
-pickle.dump(frames, open('frames.pkl', 'w'))
+pickle.dump(frames, open('vae_gym/frames.pkl', 'w'))
+#Image.fromarray(toNatureDQNFormat(frames[0])).show()
 
 
 # If you want to save as images, use Image module or cv2"
