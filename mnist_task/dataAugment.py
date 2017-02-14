@@ -128,6 +128,9 @@ for i in  range(batch_size):
         sys.stdout.write('=====> Images augmented: %d\r'%(i))
         sys.stdout.flush()
 
-h5_file = h5py.File(params['save_path'], 'w')
-h5_file.create_dataset('augmented', augmented_inputs.shape, dtype='uint8', data = augmented_inputs)
-h5_file.close()
+if params['debug_mode'] == 0:
+    h5_file = h5py.File(params['save_path'], 'w')
+    h5_file.create_dataset('augmented', augmented_inputs.shape, dtype='uint8', data = augmented_inputs)
+    h5_file.close()
+else:
+    print('Debug mode complete. No data will be saved')
