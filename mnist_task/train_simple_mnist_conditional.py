@@ -1,5 +1,6 @@
 import tensorflow as tf
 import betavae_cnn as vae
+import betavae_mlp as vae
 import pdb
 import numpy as np
 import os
