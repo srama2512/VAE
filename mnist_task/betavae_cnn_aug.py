@@ -81,7 +81,11 @@ class vae(object):
     def getLatentSampler(self):
 
         self.eps = tf.random_normal([self.batch_size, self.z_size], 0, 1, dtype=tf.float32)
-        self.z_sample = tf.mul(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
+        if tf.__version__ == '0.10.0':
+			self.z_sample = tf.mul(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
+		else:
+			self.z_sample = tf.multiply(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
+
 
     def getGenerator(self):
         # Up-projection layer

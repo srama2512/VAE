@@ -29,6 +29,7 @@ params = {}
 params['z_size'] = 20
 params['beta'] = 1
 params['batch_size'] = 20
+
 if model_choice == 'mlp':
     params['X_size'] = 784
     params['hidden_enc_1_size'] = 500
@@ -36,6 +37,8 @@ if model_choice == 'mlp':
     params['z_size'] = 20
     params['hidden_gen_1_size'] = 200
     params['hidden_gen_2_size'] = 500
+else:
+	params['X_size'] = [28,28]
 
 params_generated = params
 
