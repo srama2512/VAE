@@ -3,7 +3,7 @@ import numpy as np
 
 class MNIST_loader(object):
 
-    def __init__(self, params):
+	def __init__(self, params):
 		self.h5_file = h5py.File(params['h5_file'], 'r')
 		self.batch_size = params.get('batch_size', 20)
 		self.total_size = self.h5_file['augmented'].shape[0]
@@ -16,7 +16,7 @@ class MNIST_loader(object):
 		self.shapes = (self.batch_size, self.shapes[0], self.shapes[1], self.shapes[2])
 		self.iterator = 0
 
-    def next_batch(self):
+	def next_batch(self):
 		data_next = np.zeros(self.shapes)
 		if self.iterator + self.batch_size - 1 < self.total_size:
 			data_next[:, :, :, :] = np.array(self.data[self.iterator:(self.iterator+self.batch_size), :, :, :])
@@ -31,4 +31,4 @@ class MNIST_loader(object):
 			self.iterator = num_remains
 	
 		return data_next
-        
+		

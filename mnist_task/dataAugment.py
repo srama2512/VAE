@@ -18,7 +18,7 @@ parser.add_argument('--translation_y', default=1, type=int)
 parser.add_argument('--scaling', default=1, type=int)
 parser.add_argument('--save_path', default='data/augmented_mnist.h5')
 
-params = vars(parser.parse_args())
+commandline_params = vars(parser.parse_args())
 
 mnist = input_data.read_data_sets("./data/", one_hot=True)
 
@@ -34,25 +34,25 @@ shift_y, shift_x = (CANVAS_DIM-1) / 2.,(CANVAS_DIM-1) / 2.   #Assumption: All im
 
 rotations = np.linspace(-60, 60, 20)
 translations = np.linspace(-6, 6, 15)
-if(params['test_mode']==1):
+if(commandline_params['test_mode']==1):
     scaling = np.array([0.8, 1.0, 1.2])
 else:
     scaling = np.array([0.8, 0.85, 0.9, 0.95, 1.0, 1.0/0.95, 1.0/0.9, 1.0/0.85, 1.0/0.8])
 
 num_trans = 0
-if params['rotation'] == 1:
+if commandline_params['rotation'] == 1:
     num_trans += rotations.shape[0]
-if params['translation_x'] == 1:    
+if commandline_params['translation_x'] == 1:    
     num_trans += translations.shape[0]
-if params['translation_y'] == 1:
+if commandline_params['translation_y'] == 1:
     num_trans += translations.shape[0]
-if params['scaling'] == 1:
+if commandline_params['scaling'] == 1:
     num_trans += scaling.shape[0]
 
-if params['debug_mode'] == 1:
+if commandline_params['debug_mode'] == 1:
     batch_size = 1
-elif params['test_mode'] == 1:
-    batch_size = 10
+elif commandline_params['test_mode'] == 1:
+    batch_size = 100
 else:
     # Use 55000 images from train
     batch_size = 55000
@@ -66,7 +66,7 @@ for i in  range(batch_size):
     canvas_image = np.zeros((CANVAS_DIM, CANVAS_DIM))
     canvas_image[(y_center-h_half):(y_center+h_half), (x_center-w_half):(x_center+w_half)] = reshaped_input[i,:,:].copy()
     
-    if params['rotation'] == 1:
+    if commandline_params['rotation'] == 1:
         # Rotations
         for r in range(rotations.shape[0]):
             tf_rotate = transform.SimilarityTransform(rotation=np.deg2rad(rotations[r]))
@@ -76,42 +76,42 @@ for i in  range(batch_size):
             image_rotated = transform.warp(canvas_image, (tf_shift + (tf_rotate + tf_shift_inv)).inverse, order = 3)    
             augmented_inputs[aug_counter,:,:] = image_rotated.copy()
             aug_counter += 1
-            if params['debug_mode'] == 1:
+            if commandline_params['debug_mode'] == 1:
                 plt.subplot(121)
                 plt.imshow(canvas_image)
                 plt.subplot(122)
                 plt.imshow(image_rotated)
                 plt.show()
   
-    if params['translation_x'] == 1:
+    if commandline_params['translation_x'] == 1:
         # X translation
         for t in range(translations.shape[0]):
             tf_shift = transform.SimilarityTransform(translation=[translations[t], 0])
             image_x_trans = transform.warp(canvas_image, tf_shift.inverse, order = 3)   
             augmented_inputs[aug_counter,:,:] = image_x_trans.copy()
             aug_counter += 1
-            if params['debug_mode'] == 1:
+            if commandline_params['debug_mode'] == 1:
                 plt.subplot(121)
                 plt.imshow(canvas_image)
                 plt.subplot(122)
                 plt.imshow(image_x_trans)
                 plt.show()
     
-    if params['translation_y'] == 1: 
+    if commandline_params['translation_y'] == 1: 
         # Y translation
         for t in range(translations.shape[0]):
             tf_shift = transform.SimilarityTransform(translation=[0, translations[t]])
             image_y_trans = transform.warp(canvas_image, tf_shift.inverse, order = 3)    
             augmented_inputs[aug_counter,:,:] = image_y_trans.copy()
             aug_counter += 1
-            if params['debug_mode'] == 1:
+            if commandline_params['debug_mode'] == 1:
                 plt.subplot(121)
                 plt.imshow(canvas_image)
                 plt.subplot(122)
                 plt.imshow(image_y_trans)
                 plt.show()
     
-    if params['scaling'] == 1: 
+    if commandline_params['scaling'] == 1: 
         # Scaling
         for s in range(scaling.shape[0]):
             
@@ -124,7 +124,7 @@ for i in  range(batch_size):
             canvas_image_scaled[(y_center-h_half_curr):(y_center+h_curr-h_half_curr), (x_center-w_half_curr):(x_center+w_curr-w_half_curr)] = scaled_input.copy()
             augmented_inputs[aug_counter,:,:] = canvas_image_scaled.copy()
             aug_counter += 1
-            if params['debug_mode'] == 1:
+            if commandline_params['debug_mode'] == 1:
                 plt.subplot(121)
                 plt.imshow(canvas_image)
                 plt.subplot(122)
@@ -134,10 +134,11 @@ for i in  range(batch_size):
         sys.stdout.write('=====> Images augmented: %d\r'%(i))
         sys.stdout.flush()
 
-if params['debug_mode'] == 0:
-    h5_file = h5py.File(params['save_path'], 'w')
+if commandline_params['debug_mode'] == 0:
+    h5_file = h5py.File(commandline_params['save_path'], 'w')
+    augmented_inputs = augmented_inputs.reshape(augmented_inputs.shape[0],augmented_inputs.shape[1], augmented_inputs.shape[2],1)
     h5_file.create_dataset('augmented', augmented_inputs.shape, data = augmented_inputs)
     h5_file.close()
-    print('Augmented data written to {:}'.format(params['save_path']))
+    print('Augmented data written to {:}'.format(commandline_params['save_path']))
 else:
     print('Debug mode complete. No data will be saved')

@@ -68,11 +68,11 @@ for i in range(tr_iters):
 
     if (i+1) % 50000 == 0 or i == 0:
         generated = VAE.generateSample(sess, n_samples=params['batch_size'])
-        os.system('mkdir -p %s/iter_%.6d'%(params['save_dir'], i+1))
+        os.system('mkdir -p %s/iter_%.6d'%(commandline_params['save_dir'], i+1))
         for im in range(params['batch_size']):
             reshaped_image = generated[im]
             reshaped_image = reshaped_image.reshape(28, 28)
-            scipy.misc.toimage(reshaped_image, cmin=0.0, cmax=1.0).save('%s/iter_%.6d/img%.3d.png'%(params['save_dir'],i+1,im))
+            scipy.misc.toimage(reshaped_image, cmin=0.0, cmax=1.0).save('%s/iter_%.6d/img%.3d.png'%(commandline_params['save_dir'],i+1,im))
 
-        save_path = saver.save(sess, '%s/iter_%.6d/checkpoint.ckpt'%(params['save_dir'],i+1))
+        save_path = saver.save(sess, '%s/iter_%.6d/checkpoint.ckpt'%(commandline_params['save_dir'],i+1))
         print('Saved model to %s'%(save_path))

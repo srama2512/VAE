@@ -5,6 +5,7 @@ mnist_task/*.pyc
 mnist_task/vae.pyc
 mnist_task/MNIST_data/
 mnist_task/generated_functional/
+mnist_task/generated
 mnist_task/generated_conv/
 mnist_task/generated_conv_arch1/
 mnist_task/generated_aug/
