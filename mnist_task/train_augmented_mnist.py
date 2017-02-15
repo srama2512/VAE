@@ -26,11 +26,11 @@ else:
 
 sess = tf.InteractiveSession()
 
-tr_iters = 200000
+tr_iters = 2000000
 
 params = {}
 params['z_size'] = 20
-params['beta'] = 4
+params['beta'] = 1
 params['batch_size'] = 20
 if model_choice == 'mlp':
     params['X_size'] = 1600
@@ -58,7 +58,7 @@ except AttributeError:
 
 saver = tf.train.Saver()
 
-for i in range(tr_iters):
+for i in range(0, tr_iters):
     
     batch = loader.next_batch()
     if model_choice == 'cnn':
@@ -70,9 +70,9 @@ for i in range(tr_iters):
                                feed_dict = {VAE.X_placeholder: inputReshaped})
 
     if i % 1000 == 0:
-        print('Iteration %.4d  Train Loss: %6.3f'%(i+1, loss_val))
+        print('Iter %.4d  Train Loss: %6.3f data.iter: %.6d data.total: %.6d'%(i+1, loss_val, loader.iterator, loader.total_size ))
 
-    if (i+1) % 250000 == 0 or i == 0:
+    if (i+1) % 50000 == 0 or i == 0:
         generated = VAE.generateSample(sess, n_samples=params['batch_size'])
         os.system('mkdir -p %s/iter_%.6d'%(commandline_params['save_dir'], i+1))
         for im in range(params['batch_size']):

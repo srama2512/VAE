@@ -17,16 +17,18 @@ class MNIST_loader(object):
 		self.iterator = 0
 
     def next_batch(self):
-        data_next = np.zeros(self.shapes)
-        if self.iterator + self.batch_size - 1 < self.total_size:
-            data_next[:, :, :, :] = np.array(self.data[self.iterator:(self.iterator+self.batch_size), :, :, :])
-            self.iterator += self.batch_size
-        else:
-            num_remains = self.batch_size - (self.total_size - self.iterator+1)
-            data_next[:(self.total_size-self.iterator+1), :, :, :] = np.array(self.data[self.iterator:self.total_size])
-            # Wrap around
-            data_next[(self.total_size-self.iterator+1):, :, :, :] = np.array(self.data[0:num_remains, :, :, :])
-            self.iterator = num_remains
-        
-        return data_next
+		data_next = np.zeros(self.shapes)
+		if self.iterator + self.batch_size - 1 < self.total_size:
+			data_next[:, :, :, :] = np.array(self.data[self.iterator:(self.iterator+self.batch_size), :, :, :])
+			self.iterator += self.batch_size
+			if self.iterator >= self.total_size:
+				self.iterator = 0
+		else:
+			num_remains = self.batch_size - (self.total_size - self.iterator+1)
+			data_next[:(self.total_size-self.iterator+1), :, :, :] = np.array(self.data[self.iterator:self.total_size, :, :, :])
+			# Wrap around
+			data_next[(self.total_size-self.iterator+1):, :, :, :] = np.array(self.data[0:num_remains, :, :, :])
+			self.iterator = num_remains
+	
+		return data_next
         
