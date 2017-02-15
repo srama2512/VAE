@@ -15,15 +15,16 @@ class vae(object):
         # (1) X_size: number of image pixels
         # (2) z_size: latent variable size
         
+        self.X_size = params['X_size']
         self.z_size = params['z_size']
         self.beta = params['beta']
         
     def _create_network_(self):
     
-        self.X_placeholder = tf.placeholder(tf.float32,[None, 28, 28, 1])
+        self.X_placeholder = tf.placeholder(tf.float32,[None]+self.X_size+ [1])
 
         self.fc_size = 32*6*6 # Size to flatten to after 2nd convolution 
-        self.batch_size = 20#tf.shape(self.X_placeholder)[0]
+        self.batch_size = tf.shape(self.X_placeholder)[0]
         self.num_channels = 1#tf.shape(self.X_placeholder)[3]
         self.getEncoder()
         self.getLatentSampler()
@@ -42,6 +43,12 @@ class vae(object):
     
     def encode(self,sess,x) :
         return sess.run(self.z_sample, feed_dict={self.X_placeholder: x})
+    
+    def encode_ML(self,sess,x) :
+        '''
+        Encode a given value of x to z by using the most likely z from Q(z|x)
+        '''
+        return sess.run(self.mu_X, feed_dict={self.X_placeholder: x})
     
     def decode(self,sess,z) :
         return sess.run(self.output, feed_dict={self.z_sample: z})
@@ -75,27 +82,28 @@ class vae(object):
     def getLatentSampler(self):
 
         self.eps = tf.random_normal([self.batch_size, self.z_size], 0, 1, dtype=tf.float32)
-        self.z_sample = tf.mul(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
+        self.z_sample = tf.multiply(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
 
     def getGenerator(self):
         # Up-projection layer
         self.gen_proj_w = getWeight([self.z_size, self.fc_size])
         self.gen_proj_b = getBias([self.fc_size])
-        gen_proj = tf.matmul(self.z_sample, self.gen_proj_w) + self.gen_proj_b  
-        proj_reshaped = tf.nn.relu(tf.reshape(gen_proj, [self.batch_size, 6, 6, 32]))
+        gen_proj = tf.matmul(self.z_sample, self.gen_proj_w) + self.gen_proj_b
+        self.z_batch_size=tf.shape(self.z_sample)[0]
+        proj_reshaped = tf.nn.relu(tf.reshape(gen_proj, [self.z_batch_size, 6, 6, 32]))
         # Transposed Convolution layer 1
         # Note: conv2d_transpose expects the filter size to be specified
         # as (height, width, OUT_channels, IN_channels)
         self.trans_conv_w_1 = getWeight([3, 3, 64, 32])
         self.trans_conv_b_1 = getBias([64])
-        trans_conv_1 = tf.nn.relu(tf.nn.conv2d_transpose(proj_reshaped, self.trans_conv_w_1, output_shape=[self.batch_size, 13, 13, 64], strides=[1, 2, 2, 1], padding='VALID') + self.trans_conv_b_1)
+        trans_conv_1 = tf.nn.relu(tf.nn.conv2d_transpose(proj_reshaped, self.trans_conv_w_1, output_shape=[self.z_batch_size, 13, 13, 64], strides=[1, 2, 2, 1], padding='VALID') + self.trans_conv_b_1)
 
         # Transposed Convolution layer 2
         # Note: conv2d_transpose expects the filter size to be specified
         # as (height, width, OUT_channels, IN_channels)
         self.trans_conv_w_2 = getWeight([4, 4, 1, 64])
         self.trans_conv_b_2 = getBias([1])
-        trans_conv_2 = tf.nn.conv2d_transpose(trans_conv_1, self.trans_conv_w_2, output_shape=[self.batch_size, 28, 28, 1], strides=[1, 2, 2, 1], padding='VALID')+self.trans_conv_b_2
+        trans_conv_2 = tf.nn.conv2d_transpose(trans_conv_1, self.trans_conv_w_2, output_shape=[self.z_batch_size, 28, 28, 1], strides=[1, 2, 2, 1], padding='VALID')+self.trans_conv_b_2
 
         # Generated output
         self.output = tf.nn.sigmoid(trans_conv_2)

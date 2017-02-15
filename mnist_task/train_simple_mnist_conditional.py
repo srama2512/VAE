@@ -1,5 +1,5 @@
 import tensorflow as tf
-import betavae_mlp as vae
+import betavae_cnn as vae
 import pdb
 import numpy as np
 import os
@@ -10,11 +10,11 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("./data/", one_hot=True)
 sess = tf.InteractiveSession()
 
-tr_iters = 100000
+tr_iters = 10000
 
 params = {}
 params['batch_size'] = 20
-params['X_size'] = 784
+params['X_size'] = [28,28]
 params['hidden_enc_1_size'] = 500
 params['hidden_enc_2_size'] = 200
 params['z_size'] = 20
@@ -41,12 +41,12 @@ for i in range(tr_iters):
     
     batch = mnist.train.next_batch(params['batch_size'])
     _, loss_val = sess.run([train_step, VAE.total_loss], \
-                           feed_dict = {VAE.X_placeholder: batch[0]})
+                           feed_dict = {VAE.X_placeholder: np.reshape(batch[0], (-1, 28, 28, 1))})
 
     if i % 1000 == 0:
         print('Iteration %.4d  Train Loss: %6.3f'%(i+1, loss_val))
 
-    if (i+1) % 100000 == 0:
+    if (i+1) % 10000 == 0:
 		# Generate some samples from the current model and store
         generated = VAE.generateSample(sess,params['batch_size'])
         os.system('mkdir -p generated_class/iter_%.6d'%(i+1))
@@ -64,7 +64,7 @@ n_test_imgs = 100
 rand_sample, rand_labels = mnist.validation.next_batch(n_test_imgs)
 rand_labels = np.array([np.argmax(x) for x in rand_labels])
 # Get a z for each image and then decode it back to an image
-encoded = VAE.encode_ML(sess,rand_sample)
+encoded = VAE.encode_ML(sess,np.reshape(rand_sample,(-1, 28, 28, 1)))
 decoded = VAE.decode(sess,encoded)
 #decoded = VAE.generateSampleConditional_ML(sess,rand_sample)
 os.system('mkdir -p generated_class_conditional/latent')
