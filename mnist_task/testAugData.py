@@ -7,13 +7,15 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 import sys
 sys.path.append("misc/")
+import pdb
 from MNIST_loader import MNIST_loader
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint_path', default='generated/iter_050000/')
 parser.add_argument('--input_h5', default='data/augmented_mnist.h5')
 parser.add_argument('--vae_model', default='mlp', help='[ mlp | cnn ]')
-
+parser.add_argument('--num_rotations', default=20, type=int)
+parser.add_argument('--beta', default=4, type=float)
 
 commandline_params = vars(parser.parse_args())
 model_choice = commandline_params['vae_model']
@@ -26,7 +28,7 @@ else:
 
 params = {}
 params['z_size'] = 20
-params['beta'] = 0.4
+params['beta'] = commandline_params['beta']
 params['batch_size'] = 20
 if model_choice == 'mlp':
     params['X_size'] = 1600
@@ -50,6 +52,7 @@ except AttributeError:
     # note @San: I've changed the `except` to `except AttributeError` so that it doesnt bypass future errors. In case this fails, change it back to `except`
     sess.run(tf.initialize_all_variables())
 
+pdb.set_trace()
 saver = tf.train.Saver()
 chkpt = tf.train.get_checkpoint_state(commandline_params['checkpoint_path'])
 
@@ -61,21 +64,37 @@ else:
 
 n_iter = 500
 std_devs = np.zeros((n_iter, params['z_size']))
+z_mean_theta = np.zeros((commandline_params['num_rotations'], params['z_size'])) # Computes mean z values at each angle
+z_var = np.zeros((n_iter, params['z_size']))
 print(std_devs.shape)
 for iter in range(n_iter):
 
     batch = loader.next_batch()
-    latent_var_activation = np.zeros((params['batch_size'], params['z_size']))
+    latent_sample = VAE.encode(sess=sess, x=batch)
 
     for idx in range(params['batch_size']):
-        # plt.imshow(batch[idx][:,:,0])
-        # plt.show()
-        reshaped_input = np.reshape(batch[idx], (-1, 40*40))
-        latent_var_activation[idx,:] = VAE.encode(sess=sess, x=reshaped_input)
+        #plt.imshow(batch[idx][:,:,0])
+        #plt.show()
+        #reshaped_input = np.reshape(batch[idx], (-1, 40*40))
+        #latent_var_activation[idx,:] = VAE.encode(sess=sess, x=batch[idx])
+        z_mean_theta[idx] += latent_sample[idx,:]
 
-    std_devs[iter,:] = np.std(latent_var_activation, axis=0)
+    std_devs[iter,:] = np.std(latent_sample, axis=0)
 
+z_mean_theta /= n_iter
 plt.style.use('ggplot')
-plt.plot(np.mean(std_devs, axis=0))
+thetas = np.linspace(-60, 60, commandline_params['num_rotations'])
+plt.figure(1)
+mean_std_devs = np.mean(std_devs, axis=0)
+for i in range(params['z_size']):
+    z_across_theta = z_mean_theta[:, i]
+    plt.subplot(params['z_size']/4, 4, i+1)
+    plt.plot(thetas, z_across_theta)
+    plt.ylabel('z%d: %.3f'%(i+1, mean_std_devs[i]))
+
+plt.xlabel('rotation angle in degrees')
+plt.savefig('rotation_mean_beta_{:}.png'.format(params['beta']))
+plt.figure(2)
+plt.plot(mean_std_devs)
 plt.savefig('beta_{:}.png'.format(params['beta']))
 plt.show()
