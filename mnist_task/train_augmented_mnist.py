@@ -30,7 +30,7 @@ tr_iters = 2000000
 
 params = {}
 params['z_size'] = 20
-params['beta'] = 1
+params['beta'] = 0.4
 params['batch_size'] = 20
 if model_choice == 'mlp':
     params['X_size'] = 1600
@@ -48,7 +48,7 @@ params_generated = params
 VAE = vae.vae(params)
 VAE._create_network_()
 
-train_step = tf.train.AdamOptimizer(1e-4).minimize(VAE.total_loss)
+train_step = tf.train.AdamOptimizer(5e-5).minimize(VAE.total_loss)
 
 try:
     sess.run(tf.global_variables_initializer())
@@ -72,7 +72,7 @@ for i in range(0, tr_iters):
     if i % 1000 == 0:
         print('Iter %.4d  Train Loss: %6.3f data.iter: %.6d data.total: %.6d'%(i+1, loss_val, loader.iterator, loader.total_size ))
 
-    if (i+1) % 50000 == 0 or i == 0:
+    if (i+1) % 10000 == 0 or i == 0:
         generated = VAE.generateSample(sess, n_samples=params['batch_size'])
         os.system('mkdir -p %s/iter_%.6d'%(commandline_params['save_dir'], i+1))
         for im in range(params['batch_size']):

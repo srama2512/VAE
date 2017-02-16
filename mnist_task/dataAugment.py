@@ -35,7 +35,8 @@ shift_y, shift_x = (CANVAS_DIM-1) / 2.,(CANVAS_DIM-1) / 2.   #Assumption: All im
 rotations = np.linspace(-60, 60, 20)
 translations = np.linspace(-6, 6, 15)
 if(commandline_params['test_mode']==1):
-    scaling = np.array([0.8, 1.0, 1.2])
+    scaling = np.array([0.8, 0.85, 0.9, 0.95, 1.0, 1.0/0.95, 1.0/0.9, 1.0/0.85, 1.0/0.8])
+    # scaling = np.array([0.8, 1.0, 1.2])
 else:
     scaling = np.array([0.8, 0.85, 0.9, 0.95, 1.0, 1.0/0.95, 1.0/0.9, 1.0/0.85, 1.0/0.8])
 
@@ -52,7 +53,7 @@ if commandline_params['scaling'] == 1:
 if commandline_params['debug_mode'] == 1:
     batch_size = 1
 elif commandline_params['test_mode'] == 1:
-    batch_size = 100
+    batch_size = 5000
 else:
     # Use 55000 images from train
     batch_size = 55000
@@ -131,8 +132,9 @@ for i in  range(batch_size):
                 plt.imshow(canvas_image_scaled)
                 plt.show()
     if i%100 == 0:
-        sys.stdout.write('=====> Images augmented: %d\r'%(i))
+        sys.stdout.write('=====> Images augmented: {:}\r'.format(i))
         sys.stdout.flush()
+sys.stdout.write('=====> Images augmented: {:}\n'.format(batch_size))
 
 if commandline_params['debug_mode'] == 0:
     h5_file = h5py.File(commandline_params['save_path'], 'w')
