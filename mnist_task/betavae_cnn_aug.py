@@ -33,6 +33,11 @@ class vae(object):
         # average the total loss over all samples
         self.total_loss = tf.reduce_mean(self.rec_loss + self.kl_loss)
 
+    
+    def getMeanVariance(self,sess,x) :
+        mu, log_sigma = sess.run([self.mu_X, self.log_Sigma_X_diag], feed_dict={self.X_placeholder: x})
+        return mu, np.exp(log_sigma)
+    
     def generateSample(self, sess, n_samples=20):
         z_rng = np.random.normal(size=[n_samples, self.z_size])
         return sess.run(self.output, feed_dict={self.z_sample: z_rng})
@@ -40,12 +45,9 @@ class vae(object):
     def generateSampleConditional(self, sess, x) :
         return sess.run(self.output, feed_dict={self.X_placeholder: x})
     
+    
     def encode(self,sess,x) :
         return sess.run(self.z_sample, feed_dict={self.X_placeholder: x})
-
-	def getMeanVariance(self,sess,x) :
-		mu, log_sigma = sess.run([self.mu_X, self.log_Sigma_x_diag], feed_dict={self.X_placeholder: x})
-		return mu, np.exp(log_sigma)
 
     def decode(self,sess,z) :
         return sess.run(self.output, feed_dict={self.z_sample: z})
@@ -84,11 +86,11 @@ class vae(object):
 
     def getLatentSampler(self):
 
-		self.eps = tf.random_normal([self.batch_size, self.z_size], 0, 1, dtype=tf.float32)
-		if tf.__version__ == '0.10.0':
-			self.z_sample = tf.mul(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
-		else:
-			self.z_sample = tf.multiply(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
+        self.eps = tf.random_normal([self.batch_size, self.z_size], 0, 1, dtype=tf.float32)
+        if tf.__version__ == '0.10.0':
+                self.z_sample = tf.mul(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
+        else:
+                self.z_sample = tf.multiply(tf.sqrt(tf.exp(self.log_Sigma_X_diag)), self.eps) + self.mu_X
 
 
     def getGenerator(self):

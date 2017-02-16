@@ -52,7 +52,6 @@ except AttributeError:
     # note @San: I've changed the `except` to `except AttributeError` so that it doesnt bypass future errors. In case this fails, change it back to `except`
     sess.run(tf.initialize_all_variables())
 
-pdb.set_trace()
 saver = tf.train.Saver()
 chkpt = tf.train.get_checkpoint_state(commandline_params['checkpoint_path'])
 
@@ -70,18 +69,20 @@ print(std_devs.shape)
 for iter in range(n_iter):
 
     batch = loader.next_batch()
-    latent_sample = VAE.encode(sess=sess, x=batch)
+    latent_mean, latent_variance = VAE.getMeanVariance(sess=sess, x=batch)
 
     for idx in range(params['batch_size']):
         #plt.imshow(batch[idx][:,:,0])
         #plt.show()
         #reshaped_input = np.reshape(batch[idx], (-1, 40*40))
-        #latent_var_activation[idx,:] = VAE.encode(sess=sess, x=batch[idx])
-        z_mean_theta[idx] += latent_sample[idx,:]
+        #latent_var_activation[idx] = VAE.encode(sess=sess, x=batch[idx])
+        z_var[idx] += latent_variance[idx,:]
+        z_mean_theta[idx] += latent_mean[idx,:]
 
-    std_devs[iter,:] = np.std(latent_sample, axis=0)
+    std_devs[iter,:] = np.std(latent_mean, axis=0)
 
 z_mean_theta /= n_iter
+z_var = np.mean(z_var, axis=0)/n_iter
 plt.style.use('ggplot')
 thetas = np.linspace(-60, 60, commandline_params['num_rotations'])
 plt.figure(1)
@@ -90,7 +91,7 @@ for i in range(params['z_size']):
     z_across_theta = z_mean_theta[:, i]
     plt.subplot(params['z_size']/4, 4, i+1)
     plt.plot(thetas, z_across_theta)
-    plt.ylabel('z%d: %.3f'%(i+1, mean_std_devs[i]))
+    plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
 plt.xlabel('rotation angle in degrees')
 plt.savefig('rotation_mean_beta_{:}.png'.format(params['beta']))

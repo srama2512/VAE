@@ -13,7 +13,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--vae_model', default='mlp', help='[ mlp | cnn ]')
 parser.add_argument('--save_dir', default='generated')
 parser.add_argument('--input_h5', default='data/augmented_mnist.h5')
-
+parser.add_argument('--beta', default=4, type=float)
+parser.add_argument('--learning_rate', default=1e-3, type=float)
 commandline_params = vars(parser.parse_args())
 model_choice = commandline_params['vae_model']
 if model_choice == 'mlp':
@@ -30,7 +31,7 @@ tr_iters = 2000000
 
 params = {}
 params['z_size'] = 20
-params['beta'] = 0.4
+params['beta'] = commandline_params['beta']
 params['batch_size'] = 20
 if model_choice == 'mlp':
     params['X_size'] = 1600
@@ -48,7 +49,7 @@ params_generated = params
 VAE = vae.vae(params)
 VAE._create_network_()
 
-train_step = tf.train.AdamOptimizer(5e-5).minimize(VAE.total_loss)
+train_step = tf.train.AdamOptimizer(commandline_params['learning_rate']).minimize(VAE.total_loss)
 
 try:
     sess.run(tf.global_variables_initializer())
