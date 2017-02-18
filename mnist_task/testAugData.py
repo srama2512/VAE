@@ -99,13 +99,13 @@ scales = np.linspace(0.6, 1.5, commandline_params['num_scales'])
 
 mean_of_std_devs = np.mean(std_devs, axis=0)
 
-np.save("z_mean_theta", z_mean_theta)
-np.save("mean_of_std_devs", mean_of_std_devs)
-np.save("z_var", z_var)
+np.save("z_mean_theta_beta_{:}".format(commandline_params['beta']), z_mean_theta)
+np.save("mean_of_std_devs_beta_{:}".format(commandline_params['beta']), mean_of_std_devs)
+np.save("z_var_beta_{:}".format(commandline_params['beta']), z_var)
 
 plt.style.use('ggplot')
-#plt.figure(1)
 if (trans_array[0]!=0):
+    plt.figure(figsize=(13.66,7.68))
     plt.clf()
     for i in range(params['z_size']):
         z_across_transformation = z_mean_theta[:, i]
@@ -115,9 +115,12 @@ if (trans_array[0]!=0):
         plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
     plt.xlabel('rotation angle in degrees')
-    plt.savefig('rotation_mean_beta_{:}.png'.format(params['beta']))
+    plt.suptitle('Latent Variable means across rotations. Beta={:}'.format(commandline_params['beta']))
+    plt.tight_layout()
+    plt.savefig('rotation_mean_beta_{:}.png'.format(params['beta']), dpi=200)
 
 if (trans_array[1]!=0):
+    plt.figure(figsize=(13.66,7.68))
     plt.clf()
     for i in range(params['z_size']):
         z_across_transformation = z_mean_theta[:, i]
@@ -127,9 +130,12 @@ if (trans_array[1]!=0):
         plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
     plt.xlabel('translation_x in pixels')
-    plt.savefig('translation_x_mean_beta_{:}.png'.format(params['beta']))
+    plt.suptitle('Latent Variable means across x translations. Beta={:}'.format(commandline_params['beta']))
+    plt.tight_layout()
+    plt.savefig('translation_x_mean_beta_{:}.png'.format(params['beta']), dpi=200)
 
 if (trans_array[2]!=0):
+    plt.figure(figsize=(13.66,7.68))
     plt.clf()
     for i in range(params['z_size']):
         z_across_transformation = z_mean_theta[:, i]
@@ -139,25 +145,36 @@ if (trans_array[2]!=0):
         plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
     plt.xlabel('translation_y in pixels')
-    plt.savefig('translation_y_mean_beta_{:}.png'.format(params['beta']))
+    plt.subptitle('Latent Variable means across y translations. Beta={:}'.format(commandline_params['beta']))
+    plt.tight_layout()
+    plt.savefig('translation_y_mean_beta_{:}.png'.format(params['beta']), dpi=200)
 
 if (trans_array[3]!=0):
+    plt.figure(figsize=(13.66,7.68))
     plt.clf()
+    gmin, gmax = np.min(z_mean_theta), np.max(z_mean_theta)
     for i in range(params['z_size']):
         z_across_transformation = z_mean_theta[:, i]
         plt.subplot(params['z_size']/4, 4, i+1)
-        plt.ylim([-0.2,0.2])
+        plt.ylim([gmin, gmax])
         plt.plot(scales, z_across_transformation)
         plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
     plt.xlabel('scale')
-    plt.savefig('scale_mean_beta_{:}.png'.format(params['beta']))
+    plt.suptitle('Latent Variable means across scales. Beta={:}'.format(commandline_params['beta']))
+    plt.tight_layout()
+    plt.savefig('scale_mean_beta_{:}.png'.format(params['beta']), dpi=200)
 
-#plt.figure(2)
+plt.figure(figsize=(13.66,7.68))
 plt.clf()
-plt.ylim([0,1.2])
-plt.plot(mean_of_std_devs)
-plt.savefig('beta_{:}.png'.format(params['beta']))
-#plt.show()
+gmin, gmax = np.min(mean_of_std_devs), np.max(mean_of_std_devs)
+plt.ylim([gmin, gmax])
+plt.title('Std Dev averaged over data. Beta={:}'.format(commandline_params['beta']))
+plt.ylabel('Avg Std Dev')
+plt.xlabel('Latent Variable number')
+plt.plot(range(params['z_size']), mean_of_std_devs)
+plt.tight_layout()
+plt.savefig('avg_stddev_beta_{:}.png'.format(params['beta']))
+plt.show()
 
 print('Program Finished')

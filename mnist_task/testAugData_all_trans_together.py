@@ -102,8 +102,9 @@ scales = np.linspace(-60, 60, commandline_params['num_scales'])
 
 mean_of_std_devs = np.mean(std_devs, axis=0)
 
-np.save("z_mean_theta.dump", z_mean_theta)
-np.save("mean_of_std_devs.dump", mean_of_std_devs)
+np.save("z_mean_theta_beta_{:}".format(commandline_params['beta']), z_mean_theta)
+np.save("mean_of_std_devs_beta_{:}".format(commandline_params['beta']), mean_of_std_devs)
+np.save("z_var_beta_{:}".format(commandline_params['beta']), z_var)
 
 plt.style.use('ggplot')
 #plt.figure(1)

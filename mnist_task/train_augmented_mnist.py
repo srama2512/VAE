@@ -42,7 +42,7 @@ if model_choice == 'mlp':
     params['hidden_gen_2_size'] = 500
 
 # Import MNIST data
-loader = MNIST_loader({'h5_file':commandline_params['input_h5'], 'batch_size':params['batch_size'], 'shufflle': 1})
+loader = MNIST_loader({'h5_file':commandline_params['input_h5'], 'batch_size':params['batch_size'], 'shuffle': 1})
 
 params_generated = params
 
