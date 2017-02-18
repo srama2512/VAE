@@ -8,11 +8,16 @@ import argparse
 import pickle
 import betavae_cnn_84 as vae
 
+# Magic seed number 
+magic_seed_number = 74846
+
 def sample_batch(frameslist, perm, n=1) :
 	return [frameslist[perm[x]]/np.float32(255) for x in rn.choice(len(perm),n)]
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_file', default='frames.pkl')
+parser.add_argument('--tr_iters',default=100000,type=int)
+parser.add_argument('--beta', default=1.28, type=float)
 commandline_params = vars(parser.parse_args())
 
 frames=[]
@@ -22,13 +27,14 @@ f.close()
 
 n_total = len(frames)
 n_valid = int(.2*n_total)
+rn.seed(magic_seed_number) # Seed chosen by die rolls. Guaranteed to be random
 perm = rn.choice(n_total,n_total)
 perm_train = perm[:-n_valid]
 perm_valid = perm[-n_valid:]
 
 sess = tf.InteractiveSession()
 
-tr_iters = 10000
+tr_iters = commandline_params['tr_iters']
 
 
 params = {}
@@ -39,7 +45,8 @@ params['hidden_enc_2_size'] = 200
 params['z_size'] = 30
 params['hidden_gen_1_size'] = 200
 params['hidden_gen_2_size'] = 500
-params['beta'] = 1.28
+params['beta'] = commandline_params['beta']
+print params['beta']
 
 params_generated = params
 
