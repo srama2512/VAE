@@ -1,0 +1,5 @@
+# Row1: Whether rotation was performed. Row2: translation_x. Row 3: translation_y. Row 4: scaling
+0
+0
+0
+1

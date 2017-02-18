@@ -27,7 +27,7 @@ else:
 
 sess = tf.InteractiveSession()
 
-tr_iters = 2000000
+tr_iters = 1000000
 
 params = {}
 params['z_size'] = 20
@@ -42,14 +42,15 @@ if model_choice == 'mlp':
     params['hidden_gen_2_size'] = 500
 
 # Import MNIST data
-loader = MNIST_loader({'h5_file':commandline_params['input_h5'], 'batch_size':params['batch_size'], 'shufflle': 1})
+loader = MNIST_loader({'h5_file':commandline_params['input_h5'], 'batch_size':params['batch_size'], 'shuffle': 1})
 
 params_generated = params
 
 VAE = vae.vae(params)
 VAE._create_network_()
 
-train_step = tf.train.AdamOptimizer(commandline_params['learning_rate']).minimize(VAE.total_loss)
+# train_step = tf.train.AdamOptimizer(commandline_params['learning_rate']).minimize(VAE.total_loss)
+train_step = tf.train.RMSPropOptimizer(commandline_params['learning_rate']).minimize(VAE.total_loss)
 
 try:
     sess.run(tf.global_variables_initializer())

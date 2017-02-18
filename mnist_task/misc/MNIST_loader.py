@@ -10,7 +10,8 @@ class MNIST_loader(object):
         self.shuffle = params.get('shuffle',  0)
         self.data = np.array(self.h5_file['augmented'])
         if self.shuffle == 1:
-            self.data = np.random.shuffle(self.data)
+            # self.data = np.random.shuffle(self.data)
+            self.data = self.data[np.random.permutation(np.arange(0,self.total_size,1))]
 
         self.shapes = self.data.shape[1:]
         self.shapes = (self.batch_size, self.shapes[0], self.shapes[1], self.shapes[2])
