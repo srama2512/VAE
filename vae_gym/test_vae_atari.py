@@ -11,8 +11,9 @@ import betavae_cnn_84 as vae
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint_path', default='output/generated_conv/iter_010000/')
 parser.add_argument('--aux_data', default='output/aux_data.pkl')
-parser.add_arugment('--batch_size', default=-1, type=int) # -1 implies it will use train batch size itself 
+parser.add_argument('--batch_size', default=-1, type=int) # -1 implies it will use train batch size itself 
 parser.add_argument('--dump_path', default='output')
+parser.add_argument('--data_file', default='frames.pkl')
 
 commandline_params = vars(parser.parse_args())
 dump_path = commandline_params['dump_path']
@@ -20,11 +21,11 @@ dump_path = commandline_params['dump_path']
 def sample_batch(frameslist, perm, n=1) :
     return [frameslist[perm[x]]/np.float32(255) for x in rn.choice(len(perm),n)]
 
-aux_data = pickle.load(commandline_params['aux_data'])
+aux_data = pickle.load(open(commandline_params['aux_data']))
 magic_seed_number = aux_data['magic_seed_number']
 rn.seed(magic_seed_number) # Seed chosen by die rolls. Guaranteed to be random
 
-frames = pickle.load(open('frames.pkl','rb'))
+frames = pickle.load(open(commandline_params['data_file'],'rb'))
 n_total = len(frames)
 n_valid = int(.2*n_total)
 #perm = rn.choice(n_total,n_total)

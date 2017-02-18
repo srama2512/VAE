@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_file', default='frames.pkl')
 parser.add_argument('--tr_iters', default=100000, type=int)
 parser.add_argument('--beta', default=1.28, type=float)
-parser.add_arugment('--learning_rate', default=1e-4, type=float)
+parser.add_argument('--learning_rate', default=1e-4, type=float)
 parser.add_argument('--dump_path', default='output/generated_conv')
 
 commandline_params = vars(parser.parse_args())
@@ -68,6 +68,7 @@ aux_data = {'params': params, 'commandline_params': commandline_params, \
             'perm_train': perm_train, 'perm_valid': perm_valid, \
             'magic_seed_number': magic_seed_number} 
 
+os.system('mkdir -p %s'%(dump_path))
 pickle.dump(aux_data, open('%s/aux_data.pkl'%(dump_path), 'w'))
 
 for i in range(tr_iters):
