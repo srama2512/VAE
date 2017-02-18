@@ -107,10 +107,11 @@ plt.style.use('ggplot')
 if (trans_array[0]!=0):
     plt.figure(figsize=(13.66,7.68))
     plt.clf()
+    gmin, gmax = np.min(z_mean_theta), np.max(z_mean_theta)
     for i in range(params['z_size']):
         z_across_transformation = z_mean_theta[:, i]
         plt.subplot(params['z_size']/4, 4, i+1)
-        plt.ylim([-0.2,0.2])
+        plt.ylim([gmin, gmax])
         plt.plot(thetas, z_across_transformation)
         plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
@@ -122,10 +123,11 @@ if (trans_array[0]!=0):
 if (trans_array[1]!=0):
     plt.figure(figsize=(13.66,7.68))
     plt.clf()
+    gmin, gmax = np.min(z_mean_theta), np.max(z_mean_theta)
     for i in range(params['z_size']):
         z_across_transformation = z_mean_theta[:, i]
         plt.subplot(params['z_size']/4, 4, i+1)
-        plt.ylim([-0.2,0.2])
+        plt.ylim([gmin, gmax])
         plt.plot(trans_x, z_across_transformation)
         plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
@@ -137,10 +139,11 @@ if (trans_array[1]!=0):
 if (trans_array[2]!=0):
     plt.figure(figsize=(13.66,7.68))
     plt.clf()
+    gmin, gmax = np.min(z_mean_theta), np.max(z_mean_theta)
     for i in range(params['z_size']):
         z_across_transformation = z_mean_theta[:, i]
         plt.subplot(params['z_size']/4, 4, i+1)
-        plt.ylim([-0.2,0.2])
+        plt.ylim([gmin, gmax])
         plt.plot(trans_y, z_across_transformation)
         plt.ylabel('z%d: %.3f'%(i+1, z_var[i]))
 
@@ -175,6 +178,7 @@ plt.xlabel('Latent Variable number')
 plt.plot(range(params['z_size']), mean_of_std_devs)
 plt.tight_layout()
 plt.savefig('avg_stddev_beta_{:}.png'.format(params['beta']))
+
 plt.show()
 
 print('Program Finished')
