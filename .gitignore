@@ -8,6 +8,7 @@ mnist_task/generated_functional/
 mnist_task/generated_conv/
 mnist_task/generated_conv_arch1/
 mnist_task/generated_aug/
+mnist_task/generated/
 
 *.pkl
 *.pyc
