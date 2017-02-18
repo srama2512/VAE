@@ -16,8 +16,11 @@ def sample_batch(frameslist, perm, n=1) :
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_file', default='frames.pkl')
-parser.add_argument('--tr_iters',default=100000,type=int)
+parser.add_argument('--tr_iters', default=100000, type=int)
 parser.add_argument('--beta', default=1.28, type=float)
+parser.add_arugment('--learning_rate', default=1e-4, type=float)
+parser.add_argument('--dump_path', default='output/generated_conv')
+
 commandline_params = vars(parser.parse_args())
 
 frames=[]
@@ -35,25 +38,24 @@ perm_valid = perm[-n_valid:]
 sess = tf.InteractiveSession()
 
 tr_iters = commandline_params['tr_iters']
-
+lr_rate = commandline_params['learning_rate']
+dump_path = commandline_params['dump_path']
 
 params = {}
 params['batch_size'] = 20
 params['X_size'] = [84,84]
-params['hidden_enc_1_size'] = 500
-params['hidden_enc_2_size'] = 200
 params['z_size'] = 30
-params['hidden_gen_1_size'] = 200
-params['hidden_gen_2_size'] = 500
 params['beta'] = commandline_params['beta']
-print params['beta']
+
+print('---Params used---')
+print params
 
 params_generated = params
 
 VAE = vae.vae(params)
 VAE._create_network_()
 
-train_step = tf.train.AdamOptimizer(1e-4).minimize(VAE.total_loss)
+train_step = tf.train.AdamOptimizer(lr_rate).minimize(VAE.total_loss)
 
 try:
     sess.run(tf.global_variables_initializer())
@@ -61,6 +63,12 @@ except AttributeError:
     sess.run(tf.initialize_all_variables())
 
 saver = tf.train.Saver()
+
+aux_data = {'params': params, 'commandline_params': commandline_params, \
+            'perm_train': perm_train, 'perm_valid': perm_valid, \
+            'magic_seed_number': magic_seed_number} 
+
+pickle.dump(aux_data, open('%s/aux_data.pkl'%(dump_path), 'w'))
 
 for i in range(tr_iters):
     
@@ -74,8 +82,8 @@ for i in range(tr_iters):
 
     if (i+1) % 50000 == 0 or i == 0:
         generated = VAE.generateSample(sess, n_samples=30)
-        os.system('mkdir -p output/generated_conv/iter_%.6d'%(i+1))
-        save_path = saver.save(sess, 'output/generated_conv/iter_%.6d/checkpoint.ckpt'%(i+1))
+        os.system('mkdir -p %s/iter_%.6d'%(dump_path, i+1))
+        save_path = saver.save(sess, '%s/iter_%.6d/checkpoint.ckpt'%(dump_path, i+1))
         #print('Saved model to %s'%(save_path))
-os.system('mkdir -p output/generated_conv/iter_%.6d'%(i+1))        
-save_path = saver.save(sess, 'output/generated_conv/iter_%.6d/checkpoint.ckpt'%(i+1))
+os.system('mkdir -p %s/iter_%.6d'%(dump_path, i+1))        
+save_path = saver.save(sess, '%s/iter_%.6d/checkpoint.ckpt'%(dump_path, i+1))

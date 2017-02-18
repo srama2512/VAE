@@ -10,33 +10,36 @@ import betavae_cnn_84 as vae
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--checkpoint_path', default='output/generated_conv/iter_010000/')
-commandline_params = vars(parser.parse_args())
+parser.add_argument('--aux_data', default='output/aux_data.pkl')
+parser.add_arugment('--batch_size', default=-1, type=int) # -1 implies it will use train batch size itself 
+parser.add_argument('--dump_path', default='output')
 
+commandline_params = vars(parser.parse_args())
+dump_path = commandline_params['dump_path']
 
 def sample_batch(frameslist, perm, n=1) :
-	return [frameslist[perm[x]]/np.float32(255) for x in rn.choice(len(perm),n)]
+    return [frameslist[perm[x]]/np.float32(255) for x in rn.choice(len(perm),n)]
+
+aux_data = pickle.load(commandline_params['aux_data'])
+magic_seed_number = aux_data['magic_seed_number']
+rn.seed(magic_seed_number) # Seed chosen by die rolls. Guaranteed to be random
 
 frames = pickle.load(open('frames.pkl','rb'))
 n_total = len(frames)
 n_valid = int(.2*n_total)
-perm = rn.choice(n_total,n_total)
-perm_train = perm[:-n_valid]
-perm_valid = perm[-n_valid:]
+#perm = rn.choice(n_total,n_total)
+#perm_train = perm[:-n_valid]
+#perm_valid = perm[-n_valid:]
+perm_train = aux_data['perm_train']
+perm_valid = aux_data['perm_valid']
 
 sess = tf.InteractiveSession()
 
 tr_iters = 2000
 
-
-params = {}
-params['batch_size'] = 20
-params['X_size'] = [84,84]
-params['hidden_enc_1_size'] = 500
-params['hidden_enc_2_size'] = 200
-params['z_size'] = 30
-params['hidden_gen_1_size'] = 200
-params['hidden_gen_2_size'] = 500
-params['beta'] = 1.28
+params = aux_data['params']
+if commandline_params['batch_size'] != -1:
+    params['batch_size'] = commandline_params['batch_size']
 
 params_generated = params
 
@@ -74,4 +77,4 @@ latent_variance = np.var(encoded, axis=0)
 print np.sort(latent_variance)
 
 covmat = np.cov(encoded,rowvar=False)
-scipy.misc.toimage(covmat, cmin=0.0, cmax=1.0).save('output/covariance.png')
+scipy.misc.toimage(covmat, cmin=0.0, cmax=1.0).save('%s/covariance.png'%(dump_path))
