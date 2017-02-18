@@ -32,7 +32,7 @@ w_half = int(IMAGE_DIM/2)
 h_half = int(IMAGE_DIM/2)
 shift_y, shift_x = (CANVAS_DIM-1) / 2.,(CANVAS_DIM-1) / 2.   #Assumption: All images of same size
 
-rotations = np.linspace(-60, 60, 20)
+rotations = np.linspace(-180, 180, 30)
 translations = np.linspace(-6, 6, 15)
 if(commandline_params['test_mode']==1):
     scaling = np.array([0.8, 0.85, 0.9, 0.95, 1.0, 1.0/0.95, 1.0/0.9, 1.0/0.85, 1.0/0.8])

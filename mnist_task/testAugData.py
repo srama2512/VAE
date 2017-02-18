@@ -29,7 +29,7 @@ else:
 params = {}
 params['z_size'] = 20
 params['beta'] = commandline_params['beta']
-params['batch_size'] = 20
+params['batch_size'] = 30
 if model_choice == 'mlp':
     params['X_size'] = 1600
     params['hidden_enc_1_size'] = 500
@@ -84,7 +84,7 @@ for iter in range(n_iter):
 z_mean_theta /= n_iter
 z_var = np.mean(z_var, axis=0)/n_iter
 plt.style.use('ggplot')
-thetas = np.linspace(-60, 60, commandline_params['num_rotations'])
+thetas = np.linspace(-180, 180, commandline_params['num_rotations'])
 plt.figure(1)
 mean_std_devs = np.mean(std_devs, axis=0)
 for i in range(params['z_size']):

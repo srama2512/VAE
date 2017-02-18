@@ -73,7 +73,7 @@ for i in range(0, tr_iters):
     if i % 1000 == 0:
         print('Iter %.4d  Train Loss: %6.3f data.iter: %.6d data.total: %.6d'%(i+1, loss_val, loader.iterator, loader.total_size ))
 
-    if (i+1) % 10000 == 0 or i == 0:
+    if (i+1) % 50000 == 0 or i == 0:
         generated = VAE.generateSample(sess, n_samples=params['batch_size'])
         os.system('mkdir -p %s/iter_%.6d'%(commandline_params['save_dir'], i+1))
         for im in range(params['batch_size']):
