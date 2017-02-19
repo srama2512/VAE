@@ -44,6 +44,9 @@ class vae(object):
     def encode(self,sess,x) :
         return sess.run(self.z_sample, feed_dict={self.X_placeholder: x})
     
+    def get_conditional_params(self,sess,x) :
+        return sess.run([self.mu_X, tf.exp(self.log_Sigma_X_diag)],feed_dict={self.X_placeholder: x})
+    
     def encode_ML(self,sess,x) :
         '''
         Encode a given value of x to z by using the most likely z from Q(z|x)

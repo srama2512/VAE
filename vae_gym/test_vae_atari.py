@@ -80,9 +80,17 @@ n_test_batches = 50
 # Sample some random images from the validtion set
 #rand_samples = [sample_batch(frames,n_test_imgs_per_batch) for i in range(n_test_batches)]
 # Get a z for each image and then decode it back to an image
-encoded=np.concatenate([VAE.encode_ML(sess,np.reshape(sample_batch(frames, perm_valid, n_test_imgs_per_batch),(-1, 84, 84, 1))) for i in range(n_test_batches)], axis = 0)
+encoded,cvars = [],[]
+for i in range(n_test_batches) :
+	z,v = VAE.get_conditional_params(sess,np.reshape(sample_batch(frames, perm_valid, n_test_imgs_per_batch),(-1, 84, 84, 1)))
+	encoded.append(z)
+	cvars.append(v)
+encoded = np.concatenate(encoded,axis=0)
+cvars = np.concatenate(cvars,axis=0)
+#encoded,cvars=np.concatenate(([VAE.get_conditional_params(sess,np.reshape(sample_batch(frames, perm_valid, n_test_imgs_per_batch),(-1, 84, 84, 1))) for i in range(n_test_batches)]), axis = 0)
 #encoded_stacked = (np.vstack(encoded))
-latent_variance = np.var(encoded, axis=0)
+#latent_variance = np.var(encoded, axis=0)
+latent_variance = np.mean(cvars, axis=0)
 print np.sort(latent_variance)
 # Get covariance of latents
 covmat = np.cov(encoded,rowvar=False)
@@ -91,7 +99,8 @@ scipy.misc.toimage(covmat, cmin=0.0, cmax=1.0).save('%s/covariance.png'%(dump_pa
 
 # Examine the effect of changing latent values
 latent_order = np.argsort(latent_variance)
-n_vis_images = 1
+n_vis_images = 5
+#vis_images_encoded = VAE.encode_ML(sess,np.reshape(sample_batch(frames, perm_valid, n_vis_images),(-1, 84, 84, 1)))
 vis_images_encoded = VAE.encode_ML(sess,np.reshape(sample_batch(frames, perm_valid, n_vis_images),(-1, 84, 84, 1)))
 sd_shifts = np.linspace(-3,3,7)
 os.system('mkdir -p %s'%(commandline_params['vis_out_dir']))
@@ -99,7 +108,8 @@ os.system('mkdir -p %s'%(commandline_params['vis_out_dir']))
 for i in range(n_vis_images):
     im=[]
     # Go over each latent in increasing order of variance
-    for l in range(params['z_size']-5, params['z_size']) :
+    #for l in range(params['z_size']-5, params['z_size']) :
+    for l in range(6) :
         im_l=[]
         # Apply the deviations
         for delta in sd_shifts :
