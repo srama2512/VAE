@@ -14,6 +14,7 @@ parser.add_argument('--aux_data', default='output/aux_data.pkl')
 parser.add_argument('--batch_size', default=-1, type=int) # -1 implies it will use train batch size itself 
 parser.add_argument('--dump_path', default='output')
 parser.add_argument('--data_file', default='frames.pkl')
+parser.add_argument('--vis_out_file', default='output/visualization')
 
 commandline_params = vars(parser.parse_args())
 dump_path = commandline_params['dump_path']
@@ -22,10 +23,17 @@ def sample_batch(frameslist, perm, n=1) :
     return [frameslist[perm[x]]/np.float32(255) for x in rn.choice(len(perm),n)]
 
 aux_data = pickle.load(open(commandline_params['aux_data']))
+aux_data=[]
+with open(commandline_params['aux_data']), 'r') as f:
+    aux_data = pickle.load(f)
+f.close()
 magic_seed_number = aux_data['magic_seed_number']
 rn.seed(magic_seed_number) # Seed chosen by die rolls. Guaranteed to be random
 
-frames = pickle.load(open(commandline_params['data_file'],'rb'))
+frames=[]
+with open(commandline_params['data_file'], 'r') as f:
+    frames = pickle.load(f)
+f.close()
 n_total = len(frames)
 n_valid = int(.2*n_total)
 #perm = rn.choice(n_total,n_total)
@@ -76,6 +84,29 @@ encoded=np.concatenate([VAE.encode_ML(sess,np.reshape(sample_batch(frames, perm_
 #encoded_stacked = (np.vstack(encoded))
 latent_variance = np.var(encoded, axis=0)
 print np.sort(latent_variance)
-
+# Get covariance of latents
 covmat = np.cov(encoded,rowvar=False)
 scipy.misc.toimage(covmat, cmin=0.0, cmax=1.0).save('%s/covariance.png'%(dump_path))
+
+
+# Examine the effect of changing latent values
+latent_order = np.argsort(latent_variance)
+n_vis_images = 10
+vis_images_encoded = VAE.encode_ML(sess,np.reshape(sample_batch(frames, perm_valid, n_vis_images),(-1, 84, 84, 1)))
+sd_shifts = np.linspace(-3,3,7)
+os.system('mkdir -p %s'%(commandline_params['vis_out_dir']))
+# Go over each image sampled
+for i in range(n_vis_images):
+    im=[]
+    # Go over each latent in increasing order of variance
+    for l in range(params['z_size']) :
+        im_l=[]
+        # Apply the deviations
+        for delta in sd_shifts :
+			z_new = vis_images_encoded[i].copy()
+			z_new[latent_order[l]] += latent_std[latent_order[l]]*delta
+			#z_new[latent_order[l]] = delta
+			im_l.append(np.reshape(VAE.decode(sess,[z_new]),(84,84)))		
+        im.append(np.hstack(im_l))
+    # Put everything in an image
+    scipy.misc.toimage(np.vstack(im), cmin=0.0, cmax=1.0).save(commandline_params['vis_out_dir']+'img%.3d.png'%(i))
