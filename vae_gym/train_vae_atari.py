@@ -20,6 +20,7 @@ parser.add_argument('--tr_iters', default=100000, type=int)
 parser.add_argument('--beta', default=1.28, type=float)
 parser.add_argument('--learning_rate', default=1e-4, type=float)
 parser.add_argument('--dump_path', default='output/generated_conv')
+parser.add_argument('--batch_size', default=20, type=int)
 
 commandline_params = vars(parser.parse_args())
 
@@ -42,7 +43,7 @@ lr_rate = commandline_params['learning_rate']
 dump_path = commandline_params['dump_path']
 
 params = {}
-params['batch_size'] = 20
+params['batch_size'] = commandline_params['batch_size']
 params['X_size'] = [84,84]
 params['z_size'] = 30
 params['beta'] = commandline_params['beta']
@@ -83,7 +84,13 @@ for i in range(tr_iters):
 
     if (i+1) % 50000 == 0 or i == 0:
         generated = VAE.generateSample(sess, n_samples=30)
-        os.system('mkdir -p %s/iter_%.6d'%(dump_path, i+1))
+	
+	os.system('mkdir -p %s/iter_%.6d'%(dump_path, i+1))
+        for im in range(30):
+	    reshaped_image = generated[im]
+	    reshaped_image = reshaped_image.reshape(84, 84)
+	    scipy.misc.toimage(reshaped_image, cmin=0.0, cmax=1.0).save('%s/iter_%.6d/img%.3d.png'%(dump_path, i+1, im))
+
         save_path = saver.save(sess, '%s/iter_%.6d/checkpoint.ckpt'%(dump_path, i+1))
         #print('Saved model to %s'%(save_path))
 os.system('mkdir -p %s/iter_%.6d'%(dump_path, i+1))        
