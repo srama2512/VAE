@@ -14,7 +14,7 @@ parser.add_argument('--aux_data', default='output/aux_data.pkl')
 parser.add_argument('--batch_size', default=-1, type=int) # -1 implies it will use train batch size itself 
 parser.add_argument('--dump_path', default='output')
 parser.add_argument('--data_file', default='frames.pkl')
-parser.add_argument('--vis_out_file', default='output/visualization')
+parser.add_argument('--vis_out_dir', default='output/visualization')
 
 commandline_params = vars(parser.parse_args())
 dump_path = commandline_params['dump_path']
@@ -24,7 +24,7 @@ def sample_batch(frameslist, perm, n=1) :
 
 aux_data = pickle.load(open(commandline_params['aux_data']))
 aux_data=[]
-with open(commandline_params['aux_data']), 'r') as f:
+with open(commandline_params['aux_data'], 'r') as f:
     aux_data = pickle.load(f)
 f.close()
 magic_seed_number = aux_data['magic_seed_number']
@@ -91,7 +91,7 @@ scipy.misc.toimage(covmat, cmin=0.0, cmax=1.0).save('%s/covariance.png'%(dump_pa
 
 # Examine the effect of changing latent values
 latent_order = np.argsort(latent_variance)
-n_vis_images = 10
+n_vis_images = 1
 vis_images_encoded = VAE.encode_ML(sess,np.reshape(sample_batch(frames, perm_valid, n_vis_images),(-1, 84, 84, 1)))
 sd_shifts = np.linspace(-3,3,7)
 os.system('mkdir -p %s'%(commandline_params['vis_out_dir']))
@@ -99,14 +99,15 @@ os.system('mkdir -p %s'%(commandline_params['vis_out_dir']))
 for i in range(n_vis_images):
     im=[]
     # Go over each latent in increasing order of variance
-    for l in range(params['z_size']) :
+    for l in range(params['z_size']-5, params['z_size']) :
         im_l=[]
         # Apply the deviations
         for delta in sd_shifts :
-			z_new = vis_images_encoded[i].copy()
-			z_new[latent_order[l]] += latent_std[latent_order[l]]*delta
-			#z_new[latent_order[l]] = delta
-			im_l.append(np.reshape(VAE.decode(sess,[z_new]),(84,84)))		
+            z_new = vis_images_encoded[i].copy()
+            #z_new[latent_order[l]] += latent_variance[latent_order[l]]*delta
+            z_new[latent_order[l]] = delta
+            im_l.append(np.reshape(VAE.decode(sess,[z_new]),(84,84)))		
         im.append(np.hstack(im_l))
+    
     # Put everything in an image
-    scipy.misc.toimage(np.vstack(im), cmin=0.0, cmax=1.0).save(commandline_params['vis_out_dir']+'img%.3d.png'%(i))
+    scipy.misc.toimage(np.vstack(im), cmin=0.0, cmax=1.0).save('%s/img%.3d.png'%(commandline_params['vis_out_dir'], i))
